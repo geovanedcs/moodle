@@ -2,11 +2,12 @@
 FROM php:8.0-apache-bullseye
 # Keep APT steps separate so Coolify logs identify repository vs package failures.
 RUN apt-get -o Acquire::Retries=3 update
+# Separate package installation from extension compilation to pinpoint APT errors.
 RUN apt-get -o Acquire::Retries=3 install -y --no-install-recommends \
     libfreetype6-dev libjpeg62-turbo-dev libpng-dev libicu-dev libzip-dev \
     libxml2-dev libonig-dev libcurl4-openssl-dev default-mysql-client \
-    ca-certificates unzip \
- && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    ca-certificates unzip
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j"$(nproc)" gd intl zip soap mysqli pdo_mysql \
     opcache exif mbstring curl \
  && a2enmod rewrite headers \
