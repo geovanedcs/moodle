@@ -1,40 +1,33 @@
-# Moodle 4.0.12 no Coolify
+# Moodle 4.0.12 (Build 20231211) — Coolify experimental branch
 
-Este compose foi preparado para a branch `moodle-4.0.12` (Build 20231211).
-
-> **Aviso:** Moodle 4.0 e PHP 8.0 estão fora de suporte. Use apenas em
-> ambiente isolado/de testes ou com uma estratégia explícita de mitigação
-> e migração. Não exponha dados sensíveis sem atualizar a plataforma.
+Branch: `moodle-4.0.12-coolify`. Original `moodle-4.0.12` is unchanged.
 
 ## Deploy
+Create a **new** Git-backed Docker Compose resource in Coolify, branch
+`moodle-4.0.12-coolify`, Compose path `/compose.yaml`.
 
-1. No Coolify, crie um novo recurso **Docker Compose** conectado ao GitHub
-   `geovanedcs/moodle`, branch `moodle-4.0.12`.
-2. Configure o caminho do Compose como `/compose.yaml` e habilite build
-   a partir do Dockerfile (não selecione imagem pronta do Moodle).
-3. Cadastre as variáveis de ambiente do recurso:
-   - `MOODLE_URL=https://moodle.seudominio.com.br` (URL pública exata, sem barra final)
-   - `SERVICE_PASSWORD_MOODLE` (senha gerada pelo Coolify)
-   - `SERVICE_PASSWORD_MOODLE_ROOT` (senha root gerada pelo Coolify)
-   Verifique se ambas aparecem na interface e se foram geradas antes do deploy.
-   Não altere as senhas depois de inicializar o banco sem também atualizar
-   os usuários do MariaDB.
-4. No serviço **moodle** (porta interna 80), configure o domínio HTTPS
-   correspondente a `MOODLE_URL` no Coolify. Não exponha a porta do banco.
-5. Faça o deploy e abra o domínio para completar a instalação inicial.
-   O arquivo `config.php` é gerenciado pela imagem e lê as variáveis.
-6. Confirme o funcionamento do cron (serviço `cron`) após a instalação.
+Coolify generates `SERVICE_URL_MOODLE_80` (web service, port 80),
+`SERVICE_PASSWORD_MOODLE` (database user),
+`SERVICE_PASSWORD_MOODLEROOT` (database root), and
+`SERVICE_PASSWORD_MOODLEADMIN` (Moodle admin). Verify their generated values
+under Environment Variables. Set `MOODLE_ADMIN_EMAIL` to a real address.
 
-## Persistência e backups
+Set the Moodle domain to HTTPS in Coolify. Check that
+`SERVICE_URL_MOODLE_80` matches the intended public URL before deploying.
+Do not expose the database service publicly.
 
-Os volumes Docker `moodledata` e `dbdata` são persistentes. Configure
-backups **dos dois volumes** (e restauração testada) antes de usar o sistema.
-Atualizações da imagem não devem apagar esses volumes.
+The first run creates Moodle tables via CLI. Subsequent deployments preserve
+database and moodledata volumes and **do not automatically upgrade** the database.
+The cron service runs every minute after installation.
 
-## Observações
-
-- A configuração presume proxy HTTPS do Coolify; `$CFG->sslproxy = true`.
-- Não comite senhas ou arquivos `.env` no repositório.
-- O serviço cron pode registrar erros até o término da instalação inicial.
-- Se a versão antiga exigir ajustes específicos de extensões, banco ou proxy,
-  revise os logs de build e de execução antes de publicar.
+## Safety
+- Moodle 4.0.12 and PHP 8.0 are end-of-life. This is for isolated staging only.
+- **Do not attach an existing production database or moodledata volume** to this
+  experimental stack. Back up and test restore procedures before migration.
+- Generated passwords are stored in Coolify, not Git; avoid changing database
+  credentials after initialization without a coordinated MariaDB update.
+- Initial admin password is passed to the Moodle CLI installer; do not share
+  deployment logs, process snapshots or environment variables.
+- Do not merge into the default branch before testing the build and installation.
+- Installation may fail on an interrupted first run, in which case inspect
+  logs and recover manually; never delete populated volumes blindly.
