@@ -1,0 +1,10 @@
+.git
+.gitignore
+.github
+Dockerfile
+compose.yaml
+docker-compose.yml
+COOLIFY.md
+.env
+.env.*
+moodledata
