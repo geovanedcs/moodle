@@ -1,10 +1,11 @@
 # Moodle 4.0.12: legacy PHP 8.0 runtime. Use only in an isolated environment.
 FROM php:8.0-apache-bullseye
-# Refresh APT indexes in the SAME layer as installation to prevent stale cached
-# package lists (which cause 404 errors when Debian security packages rotate).
-RUN rm -rf /var/lib/apt/lists/* \
- && apt-get -o Acquire::Retries=3 update \
- && apt-get -o Acquire::Retries=3 install -y --no-install-recommends \
+# Debian Bullseye legacy repositories: use archived package indexes.
+# This image is for isolated legacy Moodle installations only.
+RUN sed -i 's|http://deb.debian.org/debian-security|http://archive.debian.org/debian-security|g; s|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+ && rm -rf /var/lib/apt/lists/* \
+ && apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Retries=3 update \
+ && apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Retries=3 install -y --no-install-recommends \
     libfreetype6-dev libjpeg62-turbo-dev libpng-dev libicu-dev libzip-dev \
     libxml2-dev libonig-dev libcurl4-openssl-dev default-mysql-client \
     ca-certificates unzip
