@@ -19,6 +19,16 @@ COPY docker/apache-moodle.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/html/
 COPY docker/config.php /var/www/html/config.php
 COPY docker/entrypoint.sh /usr/local/bin/moodle-entrypoint
+# CodeRunner question type and its required adaptive behaviour.
+# Versions pinned for Moodle 4.0.12; the Jobe sandbox is deployed separately.
+RUN mkdir -p /var/www/html/question/type/coderunner \
+    /var/www/html/question/behaviour/adaptive_adapted_for_coderunner \
+ && curl --fail --location --silent --show-error --retry 3 \
+    https://github.com/trampgeek/moodle-qtype_coderunner/archive/refs/tags/v5.2.1.tar.gz \
+    | tar -xz -C /var/www/html/question/type/coderunner --strip-components=1 \
+ && curl --fail --location --silent --show-error --retry 3 \
+    https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner/archive/refs/tags/v1.4.2.tar.gz \
+    | tar -xz -C /var/www/html/question/behaviour/adaptive_adapted_for_coderunner --strip-components=1
 RUN chmod 0755 /usr/local/bin/moodle-entrypoint \
  && mkdir -p /var/moodledata \
  && chown -R www-data:www-data /var/moodledata \
