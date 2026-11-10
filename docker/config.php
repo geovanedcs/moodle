@@ -1,10 +1,8 @@
 <?php
-// Moodle configuration for Coolify. Secrets are supplied as environment variables.
-// Never commit real credentials to this file.
+// Moodle 4.0.12 / Coolify: environment-based config, no secrets in Git.
 unset($CFG);
 global $CFG;
 $CFG = new stdClass();
-
 $CFG->dbtype = 'mariadb';
 $CFG->dblibrary = 'native';
 $CFG->dbhost = getenv('DB_HOST') ?: 'db';
@@ -18,10 +16,9 @@ $CFG->dboptions = [
     'dbsocket' => false,
     'dbcollation' => 'utf8mb4_unicode_ci',
 ];
-
-$CFG->wwwroot = rtrim(getenv('MOODLE_URL') ?: '', '/');
+$CFG->wwwroot = rtrim((string) (getenv('MOODLE_URL') ?: ''), '/');
 $CFG->dataroot = '/var/moodledata';
 $CFG->directorypermissions = 02770;
-$CFG->sslproxy = true;
-
+$CFG->admin = 'admin';
+$CFG->sslproxy = (strpos($CFG->wwwroot, 'https://') === 0);
 require_once(__DIR__ . '/lib/setup.php');

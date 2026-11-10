@@ -5,30 +5,33 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      MOODLE_URL: ${MOODLE_URL:?Set MOODLE_URL in Coolify}
+      SERVICE_URL_MOODLE_80: /
+      MOODLE_URL: ${SERVICE_URL_MOODLE_80}
       DB_HOST: db
       DB_NAME: moodle
       DB_USER: moodle
       DB_PASSWORD: ${SERVICE_PASSWORD_MOODLE}
+      MOODLE_ADMIN_USER: ${MOODLE_ADMIN_USER:-admin}
+      MOODLE_ADMIN_PASSWORD: ${SERVICE_PASSWORD_MOODLEADMIN}
+      MOODLE_ADMIN_EMAIL: ${MOODLE_ADMIN_EMAIL:?Set an admin email in Coolify}
+      MOODLE_SITE_NAME: ${MOODLE_SITE_NAME:-Moodle}
+      MOODLE_SITE_SHORTNAME: ${MOODLE_SITE_SHORTNAME:-moodle}
     volumes:
       - moodledata:/var/moodledata
-    expose:
-      - "80"
     depends_on:
       db:
         condition: service_healthy
+    expose:
+      - "80"
 
   cron:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    user: www-data
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - 'while true; do php /var/www/html/admin/cli/cron.php; sleep 60; done'
     environment:
-      MOODLE_URL: ${MOODLE_URL:?Set MOODLE_URL in Coolify}
+      MOODLE_ROLE: cron
+      MOODLE_URL: ${SERVICE_URL_MOODLE_80}
       DB_HOST: db
       DB_NAME: moodle
       DB_USER: moodle
@@ -46,7 +49,7 @@ services:
       MARIADB_DATABASE: moodle
       MARIADB_USER: moodle
       MARIADB_PASSWORD: ${SERVICE_PASSWORD_MOODLE}
-      MARIADB_ROOT_PASSWORD: ${SERVICE_PASSWORD_MOODLE_ROOT}
+      MARIADB_ROOT_PASSWORD: ${SERVICE_PASSWORD_MOODLEROOT}
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     volumes:
       - dbdata:/var/lib/mysql
