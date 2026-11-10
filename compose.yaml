@@ -1,0 +1,61 @@
+services:
+  moodle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      MOODLE_URL: ${MOODLE_URL:?Set MOODLE_URL in Coolify}
+      DB_HOST: db
+      DB_NAME: moodle
+      DB_USER: moodle
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in Coolify}
+    volumes:
+      - moodledata:/var/moodledata
+    expose:
+      - "80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    user: www-data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - 'while true; do php /var/www/html/admin/cli/cron.php; sleep 60; done'
+    environment:
+      MOODLE_URL: ${MOODLE_URL:?Set MOODLE_URL in Coolify}
+      DB_HOST: db
+      DB_NAME: moodle
+      DB_USER: moodle
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in Coolify}
+    volumes:
+      - moodledata:/var/moodledata
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: moodle
+      MARIADB_USER: moodle
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in Coolify}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in Coolify}
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  moodledata:
+  dbdata:
