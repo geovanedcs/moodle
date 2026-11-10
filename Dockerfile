@@ -1,6 +1,8 @@
 # Moodle 4.0.12: legacy PHP 8.0 runtime. Use only in an isolated environment.
 FROM php:8.0-apache-bullseye
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Keep APT steps separate so Coolify logs identify repository vs package failures.
+RUN apt-get -o Acquire::Retries=3 update
+RUN apt-get -o Acquire::Retries=3 install -y --no-install-recommends \
     libfreetype6-dev libjpeg62-turbo-dev libpng-dev libicu-dev libzip-dev \
     libxml2-dev libonig-dev libcurl4-openssl-dev default-mysql-client \
     ca-certificates unzip \
