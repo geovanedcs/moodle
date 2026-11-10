@@ -14,8 +14,11 @@ Este compose foi preparado para a branch `moodle-4.0.12` (Build 20231211).
    a partir do Dockerfile (não selecione imagem pronta do Moodle).
 3. Cadastre as variáveis de ambiente do recurso:
    - `MOODLE_URL=https://moodle.seudominio.com.br` (URL pública exata, sem barra final)
-   - `DB_PASSWORD` (senha longa e aleatória)
-   - `DB_ROOT_PASSWORD` (outra senha longa e aleatória)
+   - `SERVICE_PASSWORD_MOODLE` (senha gerada pelo Coolify)
+   - `SERVICE_PASSWORD_MOODLE_ROOT` (senha root gerada pelo Coolify)
+   Verifique se ambas aparecem na interface e se foram geradas antes do deploy.
+   Não altere as senhas depois de inicializar o banco sem também atualizar
+   os usuários do MariaDB.
 4. No serviço **moodle** (porta interna 80), configure o domínio HTTPS
    correspondente a `MOODLE_URL` no Coolify. Não exponha a porta do banco.
 5. Faça o deploy e abra o domínio para completar a instalação inicial.
